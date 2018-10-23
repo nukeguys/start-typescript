@@ -181,7 +181,187 @@ const noThis: NoThis = function(name) {
 }
 ```
 
+### Generic - [?]
+
+여러 타입에 대해 동작하는 요소를 정의하되, 해당 요소를 사용할 때가 되어야 알 수 있는 타입 정보를 정의에 사용
+
+#### type variable - `<T>`
+
+```ts
+type MyNumberArray = MyArray<number>
+```
+
+#### generic function
+
+```ts
+function getFirstElem<T>(arr: T[]): T {
+    /* */
+}
+type MyArray<T> = T[];     // generic type alias
+const languages: MyArray<string> = ['TypeScript', 'JavaScript'];
+const language = getFirstElem<string>(languages); // 이 때 language의 타입은 문자열
+```
+
+inheritance
+
+```ts
+function getFirst<T extends Stack<U>, U>(container: T): U {
+  const item = container.pop();
+  container.push(item);
+  return item;
+}
+
+getFirst<Stack<number>, number)(numberStack);
+```
+
+### Union Type
+
+어떤 타입이 가질 수 있는 경우의 수를 나열 - `type | type | type`
+
+```ts
+function square(value: number, returnString: boolean = false): string | number {
+  /*  */
+}
+const stringOrNumber: string | number = square(randomNumber, randomBoolean);
+
+// type
+type SquaredType =
+    | string
+    | number;
+function square(value: number, returnOnString: boolean = false): SquaredType {
+  /*  */
+}
+const stringOrNumber: SquaredType = square(randomNumber, randomBoolean);
+```
+
+### Intersection Type
+
+이미 존재하는 여러 타입을 모두 만족하는 타입 - `type & type & type`
+
+```ts
+type BeerLovingProgrammer =
+  & Programmer
+  & BeerLover;
+```
+
+### Enum
+
+```ts
+enum Direction {
+  East,
+  West,
+  South,
+  North
+}
+
+const south: Direction = Direction.South;
+console.log(south); // 2
+```
+
+#### computed member
+
+```ts
+function getAnswer() {
+  return 42;
+}
+enum SpecialNumbers {
+  Answer = getAnswer(),
+  //계산된 멤버 뒤에 오는 멤버는 반드시 초기화되어야 한다
+  Mystery // error TS1061: Enum member must have initializer.
+}
+```
+
+#### reverse mapping
+
+```ts
+// from
+enum Direction {
+  East,
+  West,
+  South,
+  North
+}
+const east: Direction = Direction.East;
+// to
+var Direction;
+(function (Direction) {
+    Direction[Direction["East"] = 0] = "East";
+    Direction[Direction["West"] = 1] = "West";
+    Direction[Direction["South"] = 2] = "South";
+    Direction[Direction["North"] = 3] = "North";
+})(Direction || (Direction = {}));
+var east = Direction.East;
+```
+
+string
+
+```ts
+// from
+enum Direction {
+  East = 'EAST',
+  West = 'WEST',
+  South = 'SOUTH',
+  North = 'NORTH'
+}
+// to
+var Direction;
+(function (Direction) {
+    Direction["East"] = "EAST";
+    Direction["West"] = "WEST";
+    Direction["South"] = "SOUTH";
+    Direction["North"] = "NORTH";
+})(Direction || (Direction = {}));
+```
+
+#### const enum
+
+```ts
+const enum ConstEnum {
+  A,
+  B = 2,
+  C = B * 2,
+  D = -C,
+}
+// from
+console.log(ConstEnum.A);
+// to
+console.log(0 /* A */);
+```
+
+#### union enum
+
+열거형의 모든 멤버가 아래 경우 중 하나에 해당하는 열거형을 유니온 열거형(union enum)이라 부른다.
+
+- 암시적으로 초기화 된 값 (값이 표기되지 않음)
+- 문자열 리터럴
+- 숫자 리터럴
+
+```ts
+type Circle = {
+  kind: ShapeKind.Circle;
+  radius: number;
+}
+type Triangle = {
+  kind: ShapeKind.Triangle;
+  maxAngle: number;
+}
+type Square = {
+  kind: ShapeKind.Square;
+  maxLength: number;
+}
+type Shape = Circle | Triangle | Square;
+```
+
+#### union type
+
+```ts
+type Direction = 'EAST' | 'WEST' | 'SOUTH' | 'NORTH';
+const east: Direction = 'EAST';
+const center: Direction = 'CENTER'; // error TS2322: Type '"CENTER"' is not assignable to type 'Direction'.
+```
+
 ## Reference
 
 - [자바스크립트 개발자를 위한 타입스크립트](https://ahnheejong.gitbook.io/ts-for-jsdev)
 - [TypeScript with React + Redux/Immutable.js 빠르게 배우기](https://velopert.com/3595)
+- [DailyEngineering - TypeScript](https://hyunseob.github.io/categories/JavaScript/TypeScript/)
