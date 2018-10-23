@@ -436,6 +436,7 @@ interface GetData {
   <Data>(response: MyResponse<Data>): Data;
 }
 ```
+
 > 기본적으로 인터페이스로 표현할 수 있는 모든 타입은 인터페이스로 표현하고, 기본 타입에 새로운 이름을 붙이고 싶거나 유니온 타입을 명명하고 싶은 경우 등 인터페이스의 능력 밖인 부분에서만 타입 별칭을 사용하라.
 
 ### Indexible Type
@@ -511,6 +512,25 @@ interface CoolPerson extends BeverageLover, BeerLover {
 ```
 
 > 이름이 겹치는 속성의 타입은 모든 확장 대상 인터페이스에서 같아야 한다.
+
+## Class
+
+### Constructor
+
+```ts
+class BarkingDog {
+  constructor(barkingSound: string) {
+    console.log(`${barkingSound}!`);
+  }
+}
+const err: BarkingDog = new BarkingDog();
+// error TS2554: Expected 1 arguments, but got 0.
+
+const err2: BarkingDog = new BarkingDog(3);
+// error TS2345: Argument of type '3' is not assignable to parameter of type 'string'.
+```
+​
+const barkingDog: BarkingDog = new BarkingDog('월'); // 월!
 
 ## Reference
 
