@@ -523,14 +523,149 @@ class BarkingDog {
     console.log(`${barkingSound}!`);
   }
 }
+const barkingDog: BarkingDog = new BarkingDog('월'); // 월!
+
 const err: BarkingDog = new BarkingDog();
 // error TS2554: Expected 1 arguments, but got 0.
 
 const err2: BarkingDog = new BarkingDog(3);
-// error TS2345: Argument of type '3' is not assignable to parameter of type 'string'.
+// error TS2345: Argument of type '3' is not assignable to parameter of type 'string'.​
 ```
-​
-const barkingDog: BarkingDog = new BarkingDog('월'); // 월!
+
+### Property
+
+모든 클래스 속성은 이름: 타입 꼴의 속성 선언(property declaration)을 통해 타입을 표기해주어야 한다.
+
+> --strictPropertyInitialization 옵션
+> `undefined`를 포함하지 않는 클래스 속성이 반드시 속성 선언 또는 생성자, 두 장소 중 한 곳에서 초기화 되어야 한다.
+
+```ts
+class User {
+  private password: string;
+}
+// error TS2564: Property 'password' has no initializer and is not definitely assigned in the constructor.
+```
+
+```ts
+password: string | undefined;
+or
+password!: string; // definitive assignment assertion - 초기화 체크 건너뜀
+```
+
+### default value / readonly
+
+속성 선언 또는 생성자 외의 장소에서는 읽기 전용 속성에 값을 할당 할 수 없다
+
+```ts
+class Triangle {
+  readonly vertices: number = 3;
+}
+const triangle: Triangle = new Triangle();
+triangle.vertices = 4;
+// error TS2540: Cannot assign to 'vertices' because it is a constant or a read-only property.
+```
+
+### method
+
+```ts
+class BarkingDog {
+  barkingSound: string;
+  
+  constructor(barkingSound: string) {
+    this.barkingSound = barkingSound;
+  }
+  
+  bark(): void {
+    console.log(`${this.barkingSound}!`);
+  }
+}
+```
+
+### 접근제어자
+
+#### public
+
+프로그램의 어느 곳에서나 접근 가능
+
+#### private
+
+해당 클래스 내부의 코드만이 접근 가능
+
+#### protected
+
+private + 서브클래스에서의 접근 또한 허용
+
+#### constructor
+
+접근 제어자가 붙은 생성자 매개변수는 같은 이름의 속성으로 선언되고, 해당 매개변수의 인자는 암묵적으로 인스턴스에 할당된다
+
+```ts
+class User {
+  constructor (public id: string, private password: string) { }
+}
+// 동일
+class User {
+  public id: string;
+  private password: string;
+  
+  constructor (id: string, password: string) {
+    this.id = id;
+    this.password = password;
+  }
+}
+```
+
+#### getter / setter
+
+```ts
+class Shape {
+  private _vertices: number = 3;
+  get vertices() {
+    console.log('Vertices getter called.');
+    return this._vertices;
+  }
+  set vertices(value) {
+    console.log('Vertices setter called.');
+    this._vertices = value;
+  }
+}
+const square = new Shape();
+square.vertices = 4; // Vertices setter called.
+const vertices = square.vertices; // Vertices getter called.
+console.log(vertices); // 4
+```
+
+### abstract class
+
+추상 클래스는 `인스턴스화가 불가능하다`는 점에서 일반 클래스와 다르다. 또한 추상 클래스는 `구현을 일부 포함할 수 있다`는 점에서 인터페이스와 다르다.
+
+```ts
+abstract class Animal {
+    move(): void {
+        console.log("roaming the earth...");
+    }
+    abstract makeSound(): void; // abstract method
+}
+```
+
+### implements
+
+#### class implements interface
+
+```ts
+class Point {
+    x: number;
+    y: number;
+}
+
+interface Point3d extends Point {
+    z: number;
+}
+
+const point3d: Point3d = {x: 1, y: 2, z: 3};
+```
+
+#### interface extends class
 
 ## Reference
 
