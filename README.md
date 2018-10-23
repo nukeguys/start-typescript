@@ -173,11 +173,19 @@ function double(arg) {
 함수의 타입 시그니쳐에서 매개변수 가장 앞에 this 를 추가
 
 ```ts
-interface NoThis {
-  (this: void, name:string): void;
+interface HTMLElement {
+  tagName: string;
+  /* ... */
 }
-const noThis: NoThis = function(name) {
-  console.log(this.a); // Property 'a' does not exist on type 'void'.
+interface Handler {
+  (this: HTMLElement, event: Event, callback: () => void): void;
+}
+let cb: any;
+// 실제 함수 매개변수에는 this가 나타나지 않음
+const onClick: Handler = function(event, cb) {
+  // this는 HTMLElement 타입
+  console.log(this.tagName);
+  cb();
 }
 ```
 
@@ -360,8 +368,153 @@ const east: Direction = 'EAST';
 const center: Direction = 'CENTER'; // error TS2322: Type '"CENTER"' is not assignable to type 'Direction'.
 ```
 
+## Interface
+
+값이 특정한 형태(shape)를 갖도록 제약
+
+```ts
+interface User {
+  name: string;
+  readonly height: number;
+  favoriteLanguage?: string;
+}
+const author: User = { name: 'lucas', height: 176 }; // ok
+author.height = 183; // error TS2540: Cannot assign to 'height' because it is a constant or a read-only property.
+```
+
+### Function Interface
+
+call signature - `(매개변수1 이름: 매개변수1 타입, 매개변수2 이름: 매개변수2 타입, ...): 반환 타입`
+
+```ts
+interface GetUserName {
+  (user: User): string;
+}
+const getUserName: GetUserName = function (user) {
+  return user.name;
+};
+```
+
+### Hybrid Interface - call signature + type
+
+```ts
+interface Counter {
+    (start: number): string;
+    interval: number;
+    reset(): void;
+}
+function getCounter(): Counter {
+    let counter = <Counter>function (start: number) { };
+    counter.interval = 123;
+    counter.reset = function () { };
+    return counter;
+}
+let c = getCounter();
+c(10);
+c.reset();
+c.interval = 5.0;
+```
+
+### Generic Interface
+
+```ts
+interface MyResponse<Data> {
+  data: Data;
+  status: number;
+  ok: boolean;
+  /* ... */
+}
+interface User {
+  name: string;
+  readonly height: number;
+  /* ... */
+}
+const user: MyReponse<User> = await getUserApiCall(userId);
+user.name; // 타입 시스템은 user.name이 string임을 알 수 있다.
+
+interface GetData {
+  <Data>(response: MyResponse<Data>): Data;
+}
+```
+> 기본적으로 인터페이스로 표현할 수 있는 모든 타입은 인터페이스로 표현하고, 기본 타입에 새로운 이름을 붙이고 싶거나 유니온 타입을 명명하고 싶은 경우 등 인터페이스의 능력 밖인 부분에서만 타입 별칭을 사용하라.
+
+### Indexible Type
+
+코드의 실행 시점에서만 알 수 있는 이름의 동적 속성을 갖는 타입
+
+```ts
+const users:  = [
+  { name: 'lucas', height: 176, favoriteLanguage: 'TypeScript' },
+  { name: 'stranger', height: 42 }
+];
+interface NameHeightMap {
+  [userName: string]: number | undefined;   // index signature
+}
+const nameHeightMap: NameHeightMap = {};
+users.map(user => {
+  nameHeightMap[user.name] = user.height;
+});
+console.log(userHeightMap)
+```
+
+#### Index and Type
+
+색인의 타입으로는 `문자열 또는 숫자`만이 사용 가능  
+문자열 색인과 숫자 색인이 모두 존재하는 경우, `숫자로 색인 된 값의 타입은 문자열로 색인 된 값 타입의 서브타입이어야 한다`.  
+문자열 색인 시그니처가 존재한다면 그 외 모든 속성의 값 타입은 문자열 색인으로 접근한 값의 타입의 서브타입이여야 한다
+
+> 이러한 제약이 존재하는 이유는 자바스크립트 색인의 동작 방식 때문이다. 자바스크립트 코드에서 객체의 색인에 접근할 때, 내부적으로는 색인의 toString() 메소드를 호출해 문자열로 변형된 값을 색인으로 사용한다. 예를 들어 1.toString() === '1' 이므로 obj[1] 이라고 적은 코드는 실제로는 obj['1']와 동일하다.
+
+```ts
+interface ErrorProne {
+  [str: string]: number;
+  [num: number]: boolean;
+}
+let errorProne: ErrorProne = {
+  'abc': 3,
+  3: true
+};
+errorProne[3];
+
+interface User {
+    [randomProp: string]: number;
+    name: string;
+}
+// error TS2411: Property 'name' of type 'string' is not assignable to string index type 'number'.
+```
+
+#### Readonly
+
+```ts
+interface ReadonlyNameHeightMap {
+  readonly [name: string]: height;
+}
+const m: ReadonlyNameHeightMap = { 'lucas': 176 };
+m['lucas'] = 177; // error TS2542: Index signature in type 'ReadonlyNameHeightMap' only permits reading.
+```
+
+### Interface 확장 - `extends`
+
+```ts
+interface BeverageLover {
+  favoriteDrink: string;
+}
+interface BeerLover {
+  favoriteDrink: 'beer';
+}
+interface CoolPerson extends BeverageLover, BeerLover {
+  name: string;
+}
+// error TS2320:
+// Interface 'CoolPerson' cannot simultaneously extend types 'BeverageLover' and 'BeerLover'.
+// Named property 'favoriteDrink' of types 'BeverageLover' and 'BeerLover' are not identical.
+```
+
+> 이름이 겹치는 속성의 타입은 모든 확장 대상 인터페이스에서 같아야 한다.
+
 ## Reference
 
 - [자바스크립트 개발자를 위한 타입스크립트](https://ahnheejong.gitbook.io/ts-for-jsdev)
 - [TypeScript with React + Redux/Immutable.js 빠르게 배우기](https://velopert.com/3595)
 - [DailyEngineering - TypeScript](https://hyunseob.github.io/categories/JavaScript/TypeScript/)
+- [TypeScript Playgound](http://www.typescriptlang.org/play/)
