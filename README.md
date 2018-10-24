@@ -796,6 +796,197 @@ const one: number = MyEnum.One;
 const name: string = MyEnum.Name;
 ```
 
+## Advanced
+
+### 타입 좁히기(Type Narrowing)
+
+보다 넓은(더 많은 경우의 수를 갖는) 타입을 더 좁은(더 적은 경우의 수를 갖는) 타입으로 재정의
+
+```ts
+interface Person {
+  favoriteLanguage?: string;
+}
+​
+function isFavoriteLangScript(p: Person): boolean {
+  // A
+  if (p.favoriteLanguage === undefined) {
+    return false;
+  }
+  
+  //B - "string | undefined" > "string"
+  const lowerCased = p.favoriteLanguage.toLowerCase();
+  return lowerCased.includes('script');
+}
+```
+
+#### Type Guard - 타입 좁히기를 유발하는 표현
+
+제어 흐름 분석(control flow analysis)
+
+- undefined / null 과의 비교
+- typeof 연산자 (typeof 타입 가드는 boolean, string, number, symbol 등 단순한 타입에 대해서만 사용하는 것이 권장)
+- 리터럴 타입과의 비교
+- instanceof 연산자
+- in 연산자
+
+```ts
+interface TeamLeader {
+  type: 'leader';
+  leadingSince: Date;
+}
+
+interface Newcomer {
+  type: 'newcomer';
+  major: string;
+}
+
+type Employee = TeamLeader | NewComer;
+
+function doSomething(employee: Employee) {
+  switch (employee.type) {
+    case 'leader': {
+      // employee는 TeamLeader 타입
+      return employee.leadingSince;
+    }
+    case 'newcomer': {
+      // employee는 Newcomer 타입
+      return employee.major;
+    }
+    default: {
+      // employee는 never 타입
+      return null;
+    }
+  }
+}
+```
+
+사용자 정의 타입 가드(user defined type guard) - `value is Type`
+
+> 대부분의 사용례는 내장 타입 가드로도 충분히 커버할 수 있다.
+
+```ts
+function isFish(animal: Animal): animal is Fish {
+  if ('legs' in animal) {
+    return false;
+  }
+  return true;
+}
+
+function doSomethingWithAnimal(animal: Animal) {
+  if (isFish(animal)) {
+    // animal은 Fish 타입
+    animal.swim();
+  } else {
+    // animal은 Dog | Insect 타입
+    console.log(animal.legs);
+  }
+}
+```
+
+### 타입 추론(Type Inference)
+
+```ts
+let x = 3; // number 타입으로 추론
+const x = 3; // 3 타입으로 추론
+const oneOrThree: 1 | 3 = 3; // 타입 표기 필요
+```
+
+#### 최적의 공통 타입(best common type)
+
+```ts
+interface Animal {
+  legs: number;
+}
+
+interface Dog extends Animal {
+  bark(): void;
+}
+
+interface Cat extends Animal {
+  meow(): void;
+}
+
+let dog: Dog;
+let cat: Cat;
+const dogAndCat = [dog, cat]; // dog | cat
+```
+
+#### 문맥 상의 타입(contextual type)
+
+rvalue의 type을 lvalue의 type으로 추론
+
+```ts
+// onmousedown: (event: MouseEvent) => void;
+window.onmousedown = function(mouseEvent: any) { // 타입 표기
+  console.log(mouseEvent.a);
+};
+```
+
+### 타입 단언(Type Assertion)
+
+원하는 임의의 타입을 값에 할당 - `value as Type`
+
+```ts
+(3 as any).substr(0, 3);
+
+const insect2: Insect = (dog as any) as Insect; // 다중
+```
+
+### Disjoint Union Type
+
+`브랜치` 간에 겹치는 부분이 없는 유니온 타입
+
+```ts
+interface Employee {
+  type: 'Employee';
+  department: string;
+  salary: number;
+}
+
+interface Boss {
+  type: 'Boss';
+  kind: boolean;  
+}
+
+interface CompanyMember = Employee | Boss;
+```
+
+#### switch 패턴 매칭
+
+```ts
+interface Square {
+  kind: "square";
+  size: number;
+}
+interface Rectangle {
+  kind: "rectangle";
+  width: number;
+  height: number;
+}
+interface Circle {
+  kind: "circle";
+  radius: number;
+}
+type Shape = Square | Rectangle | Circle;
+
+function area(s: Shape): number {
+  switch (s.kind) {
+    case "square": {
+      // s의 타입 Square로 좁혀짐
+      return s.size * s.size;
+    }
+    case "rectangle": {
+      // s의 타입 Rectangle로 좁혀짐
+      return s.height * s.width;
+    }
+    case "circle": {
+      // s의 타입 Circle로 좁혀짐
+      return Math.PI * s.radius ** 2;
+    }
+  }
+}
+```
+
 ## Reference
 
 - [자바스크립트 개발자를 위한 타입스크립트](https://ahnheejong.gitbook.io/ts-for-jsdev)
