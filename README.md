@@ -624,7 +624,7 @@ class Shape {
     console.log('Vertices getter called.');
     return this._vertices;
   }
-  set vertices(value) {
+  set vertices(value) {˜
     console.log('Vertices setter called.');
     this._vertices = value;
   }
@@ -653,19 +653,148 @@ abstract class Animal {
 #### class implements interface
 
 ```ts
+interface Animal {
+  legs: number;
+}
+
+class Dog implements Animal {
+  legs: number = 4;
+}
+```
+
+#### interface extends class
+
+```ts
 class Point {
     x: number;
     y: number;
 }
-
+​
 interface Point3d extends Point {
     z: number;
 }
-
+​
 const point3d: Point3d = {x: 1, y: 2, z: 3};
 ```
 
-#### interface extends class
+## Compatibility
+
+### Primitive type
+
+```ts
+type OneDigitOdd = 1 | 3 | 5 | 7 | 9;
+const three: OneDigitOdd = 3;
+const num: number = three;
+
+const four: number = 4;
+const oneDigitOdd: OneDigitOdd = four; 
+// error TS2322: Type 'number' is not assignable to type 'OneDigitOdd'.
+```
+
+### Object type
+
+`structural type system` - 두 타입의 구조(structure)만을 비교하여 호환성을 결정
+
+```ts
+const typeB: B = typeA;
+```
+
+- B 타입의 모든 필수 멤버에 대해, A 에도 같은 이름의 멤버가 존재하는가?
+- B 타입과 A 타입에 동시에 존재하는 멤버 m에 대해, A.m 의 타입을 M, B.m의 타입을 M'라 하자. 이 때, 모든 m에 대해서 M이 M'에 할당 가능한가?
+
+#### literal - `과잉 속성 검사(excess property checking)`
+
+객체 리터럴을 할당하는 경우에는 그 리터럴이 알려지지 않은 속성(unknown property), 즉 할당 받는 타입에 존재하지 않는 속성을 포함한다면 타입 에러가 발생
+
+```ts
+interface Color {
+  R: number;
+  G: number;
+  B: number;
+}
+
+const white: Color = {
+  R: 255,
+  G: 255,
+  B: 255,
+  A: 1
+};
+// error TS2322: Type '{ R: number; G: number; B: number; A: number; }' is not assignable to type 'Color'.
+// Object literal may only specify known properties, and 'A' does not exist in type 'Color'.
+```
+
+### Function type
+
+```ts
+let source: Source;
+const target: Target = source;
+```
+
+#### parameter count(target == source)
+
+- Target과 Source의 모든 매개변수 타입에 대해, Source의 매개변수 타입이 Target의 매개변수 타입에 할당 가능한가? (`반대?`) - 매개변수 접근 가능 여부
+- Target의 반환 타입이 Source의 반환 타입에 할당 가능한가? (`반대`) - 결과를 받을 때 할당 가능여부
+
+#### parameter count(target < source)
+
+- 불가능
+
+#### parameter count(target > source)
+
+- 초과 매개변수 무시 후 같을 때.
+
+### Class (like a object)
+
+스태틱 멤버 및 생성자는 호환성 비교에 영향을 주지 않는다.  
+private 및 protected 속성은 이름이 같다고 해도 다른 클래스로부터 정의된 멤버라면 호환이 불가능하다.
+
+### Generic (like a class)
+
+#### 모든 타입 변수가 어떤 타입인지 알려진 경우
+
+```ts
+interface NotEmpty<T> {
+  data: T;
+}
+
+let x: NotEmpty<number>;  // { data: number }
+let y: NotEmpty<string>;  // { data: string }
+```
+
+#### 어떤 타입인지 알려지지 않은 타입 변수가 있는 경우
+
+남아 있는 타입 변수를 모두 any 타입으로 대체하고 호환성을 판단
+
+```ts
+const identity = function<T>(x: T): T {
+  // ...
+};  // (x: any) => any
+
+const reverse = function<U>(y: U): U {
+  // ...
+};  // (y: any) => any
+```
+
+### Enum
+
+다른 열거형으로부터 유래된 값끼리는 호환되지 않는다.  
+숫자 열거형 값은 number에, 문자열 열거형 값은 string에 할당 가능하다.
+
+```ts
+enum Status { Ready, Waiting }
+enum Color { Red, Blue, Green }
+let status: Status = Status.Ready;
+status = Color.Green; // error
+
+enum MyEnum {
+  Zero,
+  One = 1,
+  Name = 'lucas'
+}
+const zero: number = MyEnum.Zero;
+const one: number = MyEnum.One;
+const name: string = MyEnum.Name;
+```
 
 ## Reference
 
