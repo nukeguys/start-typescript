@@ -732,8 +732,18 @@ const target: Target = source;
 
 #### parameter count(target == source)
 
-- Target과 Source의 모든 매개변수 타입에 대해, Source의 매개변수 타입이 Target의 매개변수 타입에 할당 가능한가? (`반대?`) - 매개변수 접근 가능 여부
+- Target과 Source의 모든 매개변수 타입에 대해, Source의 매개변수 타입이 Target의 매개변수 타입에 할당 가능한가? (`???`) - type이 서로 포함관계에 있는지 여부([strictFunctionTypes](#--strictFunctionTypes))
 - Target의 반환 타입이 Source의 반환 타입에 할당 가능한가? (`반대`) - 결과를 받을 때 할당 가능여부
+
+```ts
+interface Animal { animalProp: string };
+interface Dog extends Animal { dogProp: number };
+​
+let f = (animal: Animal) => animal.animalProp;
+let g = (dog: Dog) => { doSomething(dog.dogProp) };
+​
+f = g;  // error(return type)
+```
 
 #### parameter count(target < source)
 
@@ -987,9 +997,87 @@ function area(s: Shape): number {
 }
 ```
 
+## strict mode
+
+### --strict
+
+strict type checking 모두 활성화
+
+### --noImplicitAny
+
+type이 명시되지 않고 `any`로 추론되는 경우 에러 => type 명시
+
+```ts
+function log(someArg) {
+  console.log(someArg);
+}
+```
+
+### --noImplicitThis
+
+`함수`내에서 `this`의 type이 `any`로 추론되는 경우 에러 => 매개변수 목록에 this 선언  
+class에서는 선언하지 않아도 가능(constructor에서 this선언시에는 에러)
+
+```ts
+function func() {
+  console.log(this);
+}
+```
+
+### --alwaysStrict
+
+strict mode로 parsing & 각 source file에 `'use strict'` 추가
+
+### --strictNullChecks
+
+`null`과 `undefined`를 다른 type에 assign하면 에러 => type 좁히기 or `!`사용
+
+```ts
+class Member {
+  name: string
+  age?: number
+
+  getMember() {
+    return this.age.toString();
+  }
+}
+```
+
+### --strictFunctionTypes
+
+target함수의 매개변수를 source 함수의 매개변수에 할당 불가능할 경우 error (`bivariantly` > `contravariance`)
+
+```ts
+/** Type Hierarchy */
+interface Point2D { x: number; y: number; }
+interface Point3D { x: number; y: number; z: number; }
+
+/** Two sample functions */
+let iTakePoint2D = (point: Point2D) => { /* do something */ }
+let iTakePoint3D = (point: Point3D) => { /* do something */ }
+
+iTakePoint3D = iTakePoint2D;
+iTakePoint2D = iTakePoint3D; // WFT
+```
+
+### --strictPropertyInitialization
+
+`undefined`를 포함하지 않는 클래스 속성이 속성 선언 또는 생성자에서 초기화 되지 않으면 error - `?`
+
+```ts
+class User {
+  private password: string;
+}
+```
+
 ## Reference
 
 - [자바스크립트 개발자를 위한 타입스크립트](https://ahnheejong.gitbook.io/ts-for-jsdev)
+- [TypeScript Deep Dive](https://basarat.gitbooks.io/typescript/)
 - [TypeScript with React + Redux/Immutable.js 빠르게 배우기](https://velopert.com/3595)
 - [DailyEngineering - TypeScript](https://hyunseob.github.io/categories/JavaScript/TypeScript/)
 - [TypeScript Playgound](http://www.typescriptlang.org/play/)
+- [TypeScript - Compiler Options](https://www.typescriptlang.org/docs/handbook/compiler-options.html)
+- [TypeScript: 함수(Function)](https://hyunseob.github.io/2016/11/18/typescript-function/)
+- [What are covariance and contravariance](https://www.stephanboyer.com/post/132/what-are-covariance-and-contravariance)
+- [[자바스크립트] 엄격 모드(strict mode)](http://beomy.tistory.com/13)
