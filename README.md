@@ -789,7 +789,7 @@ twitterUser = facebookUser;
 
 ### Generic (like a class)
 
-#### 모든 타입 변수가 어떤 타입인지 알려진 경우
+#### 모든 타입 변수가 어떤 타입인지 알려진 경우 (=객체 타입간의 할당 여부를 판단)
 
 ```ts
 interface NotEmpty<T> {
@@ -955,7 +955,15 @@ const dogAndCat = [dog, cat]; // dog | cat
 rvalue의 type을 lvalue의 type으로 추론
 
 ```ts
-// onmousedown: (event: MouseEvent) => void;
+interface MouseEvent {
+  /* ... */
+  /* a 속성 없음! */
+}
+interface Window {
+  /* ... */
+  onmousedown: (event: MouseEvent) => void;
+}
+
 window.onmousedown = function(mouseEvent: any) { // 타입 표기
   console.log(mouseEvent.a);
 };
