@@ -186,7 +186,7 @@ const onClick: Handler = function(event, cb) {
 }
 ```
 
-### Generic - [?]
+### Generic
 
 여러 타입에 대해 동작하는 요소를 정의하되, 해당 요소를 사용할 때가 되어야 알 수 있는 타입 정보를 정의에 사용
 
@@ -621,7 +621,7 @@ class Shape {
     console.log('Vertices getter called.');
     return this._vertices;
   }
-  set vertices(value) {˜
+  set vertices(value) {
     console.log('Vertices setter called.');
     this._vertices = value;
   }
@@ -752,8 +752,40 @@ f = g;  // error(return type)
 
 ### Class (like a object)
 
-스태틱 멤버 및 생성자는 호환성 비교에 영향을 주지 않는다.  
+스태틱 멤버 및 생성자는 호환성 비교에 영향을 주지 않는다.
+
+```ts
+class Animal {
+  feet: number;
+  constructor(name: string, numFeet: number) { }
+}
+
+class Size {
+  feet: number;
+  constructor(numFeet: number) { }
+}
+
+let a: Animal;
+let s: Size;
+a = s; // ok
+s = a; // ok
+```
+
 private 및 protected 속성은 이름이 같다고 해도 다른 클래스로부터 정의된 멤버라면 호환이 불가능하다.
+
+```ts
+class FacebookUser {
+  constructor (id: string, private password: string) {}
+}
+
+class TwitterUser {
+  constructor (id: string, private password: string) {}
+}
+
+let twitterUser: TwitterUser;
+let facebookUser: FacebookUser;
+twitterUser = facebookUser;
+```
 
 ### Generic (like a class)
 
