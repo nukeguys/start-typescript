@@ -1062,7 +1062,7 @@ iTakePoint2D = iTakePoint3D; // WFT
 
 ### --strictPropertyInitialization
 
-`undefined`를 포함하지 않는 클래스 속성이 속성 선언 또는 생성자에서 초기화 되지 않으면 error - `?`
+`undefined`를 포함하지 않는 클래스 속성이 속성 선언 또는 생성자에서 초기화 되지 않으면 error (`--strictNullChecks`도 enable 해야함)
 
 ```ts
 class User {
