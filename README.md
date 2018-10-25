@@ -103,9 +103,7 @@ user.age = 22; // error TS2540: Cannot assign to 'age' because it is a constant 
 
 ### Type Alias
 
-```ts
-type NewType = Type;
-```
+이미 존재하는 타입에 다른 이름을 붙여 복잡한 타입을 간단하게 쓸 수 있다. - `type NewType = Type;`
 
 ```ts
 type UUID = string;
@@ -139,7 +137,6 @@ function invalidFetchVideo(subtitleUrl?: string, url: string) {
 func: (param1: `type`, param2: `type`) => `type`
 
 ```ts
-const yetAnotherSum: (a: number, b: number) => number = sum;
 const onePlusOne: () => number = () => 2;
 const arrowSum: (a: number, b: number) => number = (a, b) => (a + b);
 
