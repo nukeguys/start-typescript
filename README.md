@@ -729,8 +729,8 @@ const target: Target = source;
 
 #### parameter count(target == source)
 
-- Target과 Source의 모든 매개변수 타입에 대해, Source의 매개변수 타입이 Target의 매개변수 타입에 할당 가능한가? (`???`) - type이 서로 포함관계에 있는지 여부([strictFunctionTypes](#--strictFunctionTypes))
-- Target의 반환 타입이 Source의 반환 타입에 할당 가능한가? (`반대`) - 결과를 받을 때 할당 가능여부
+- Target과 Source의 모든 매개변수 타입에 대해, Target의 매개변수 타입이 Source의 매개변수 타입에 할당 가능한가?([strictFunctionTypes](#--strictFunctionTypes))
+- Source 반환 타입이 Target 반환 타입에 할당 가능한가?
 
 ```ts
 interface Animal { animalProp: string };
